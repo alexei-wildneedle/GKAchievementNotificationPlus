@@ -9,6 +9,7 @@
 #import <GameKit/GameKit.h>
 #import "GKAchievementHandler.h"
 #import "GKAchievementNotificationPlus.h"
+#import "UIImage+2xLoading.h"
 
 static GKAchievementHandler *defaultHandler = nil;
 
@@ -35,8 +36,7 @@ static GKAchievementHandler *defaultHandler = nil;
         [notification setImage:nil];
     }
 
-    [_topView addSubview:notification];
-    [notification animateIn];
+    [notification show];
 }
 
 @end
@@ -60,9 +60,8 @@ static GKAchievementHandler *defaultHandler = nil;
     self = [super init];
     if (self != nil)
     {
-        _topView = [[UIApplication sharedApplication] keyWindow];
         _queue = [[NSMutableArray alloc] initWithCapacity:0];
-        self.image = [UIImage imageNamed:@"gk-icon.png"];
+        self.image = [UIImage imageWithContentsOfFileAutoSelect:[[NSBundle mainBundle] pathForResource:@"gk-icon.png" ofType:nil]];
     }
     return self;
 }
@@ -78,8 +77,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 - (void)notifyAchievement:(GKAchievementDescription *)achievement
 {
-    GKAchievementNotificationPlus *notification = [[[GKAchievementNotificationPlus alloc] initWithAchievementDescription:achievement] autorelease];
-    notification.frame = kGKAchievementFrameStart;
+    GKAchievementNotificationPlus* notification = [GKAchievementNotificationPlus achievementNotificationWithDescription:achievement];
     notification.handlerDelegate = self;
 
     [_queue addObject:notification];
@@ -91,8 +89,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 - (void)notifyAchievementTitle:(NSString *)title andMessage:(NSString *)message
 {
-    GKAchievementNotificationPlus *notification = [[[GKAchievementNotificationPlus alloc] initWithTitle:title andMessage:message] autorelease];
-    notification.frame = kGKAchievementFrameStart;
+    GKAchievementNotificationPlus *notification = [GKAchievementNotificationPlus achievementNotificationWithTitle:title message:message image:nil];
     notification.handlerDelegate = self;
 
     [_queue addObject:notification];

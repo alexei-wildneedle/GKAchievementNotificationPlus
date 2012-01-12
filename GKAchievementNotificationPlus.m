@@ -8,11 +8,23 @@
 //  Copyright 2012 Wild Needle. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
 #import "GKAchievementNotificationPlus.h"
 #import "ABUtils.h"
+#import "UIImage+2xLoading.h"
 
+
+// TODO: add note about universal scale factor
+// TODO: this constant system sucks, revise
 
 BOOL kGKAchievementNotificationPlusFakePad; // multiplies all the point values by 2 and uses the @2x graphics if on iPad
+
+NSString* kGKAchievementNotificationPlusBackgroundGraphic;
+CGFloat kGKAchievementNotificationPlusBackgroundGraphicLeftCapWidth;
+BOOL kGKAchievementNotificationPlusHasShadow;
+CGPoint kGKAchievementNotificationPlusShadowOffset;
+CGFloat kGKAchievementNotificationPlusShadowAlpha;
+CGFloat kGKAchievementNotificationPlusShadowCornerRounding;
 
 CGSize kGKAchievementNotificationPlusDefaultSize;
 BOOL kGKAchievementNotificationPlusIsCentered; // if this is set to YES, the x coordinate of kGKAchievementNotificationPlusSetToOutOrigin is ignored
@@ -21,14 +33,26 @@ CGPoint kGKAchievementNotificationPlusSetToOutOrigin;
 CGFloat kGKAchievementNotificationPlusAnimationTime;
 CGFloat kGKAchievementNotificationPlusDisplayTime;
 
+CGFloat kGKAchievementNotificationPlusText1Color[3];
+CGFloat kGKAchievementNotificationPlusText1Size;
+CGFloat kGKAchievementNotificationPlusText2Color[3];
+CGFloat kGKAchievementNotificationPlusText2Size;
+
 CGRect kGKAchievementNotificationPlusText1;
 CGRect kGKAchievementNotificationPlusText2;
 CGRect kGKAchievementNotificationPlusText1WLogo;
 CGRect kGKAchievementNotificationPlusText2WLogo;
 
 
+static inline NSUInteger GKNotificationScaleFactor(void)
+{
+    return (kGKAchievementNotificationPlusFakePad ? ABUniversalScaleFactor() : 1);
+}
+
+
 @interface GKAchievementNotificationPlus ()
 
+- (id) initWithFrame:(CGRect)frame title:(NSString*)title message:(NSString*)message image:(UIImage*)image; // designated initializer
 - (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)delegateCallback:(SEL)selector withObject:(id)object;
@@ -38,8 +62,8 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 
 @implementation GKAchievementNotificationPlus
 
-@synthesize achievement=_achievement;
 @synthesize background=_background;
+@synthesize shadow = _shadow;
 @synthesize handlerDelegate=_handlerDelegate;
 @synthesize detailLabel=_detailLabel;
 @synthesize logo=_logo;
@@ -59,12 +83,28 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 {
     kGKAchievementNotificationPlusFakePad = YES;
 
+    kGKAchievementNotificationPlusBackgroundGraphic = @"gk-notification.png";
+    kGKAchievementNotificationPlusBackgroundGraphicLeftCapWidth = 8.0f;
+    kGKAchievementNotificationPlusHasShadow = NO;
+    //kGKAchievementNotificationPlusShadowOffset = CGPointMake(3, 3);
+    //kGKAchievementNotificationPlusShadowAlpha = 0.5f;
+    //kGKAchievementNotificationPlusShadowCornerRounding = 5.0f;
+
     kGKAchievementNotificationPlusDefaultSize = CGSizeMake(284, 52);
     kGKAchievementNotificationPlusIsCentered = YES;
-
     kGKAchievementNotificationPlusSetToOutOrigin = CGPointMake(0, 5);
+
     kGKAchievementNotificationPlusAnimationTime = 0.4f;
     kGKAchievementNotificationPlusDisplayTime = 1.75f;
+
+    kGKAchievementNotificationPlusText1Color[0] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText1Color[1] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText1Color[2] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText1Size = 15.0f;
+    kGKAchievementNotificationPlusText2Color[0] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText2Color[1] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText2Color[2] = 0xff/(CGFloat)0xff;
+    kGKAchievementNotificationPlusText2Size = 11.0f;
 
     kGKAchievementNotificationPlusText1 = CGRectMake(10.0, 6.0f, 264.0f, 22.0f);
     kGKAchievementNotificationPlusText2 = CGRectMake(10.0, 20.0f, 264.0f, 22.0f);
@@ -91,10 +131,9 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 {
     CGRect frame = CGRectMake(0,
                               0,
-                              kGKAchievementNotificationPlusDefaultSize.width*ABUniversalScaleFactor(),
-                              kGKAchievementNotificationPlusDefaultSize.height*ABUniversalScaleFactor());
-    [self initWithFrame:frame];
-    self.achievement = achievement;
+                              kGKAchievementNotificationPlusDefaultSize.width*GKNotificationScaleFactor(),
+                              kGKAchievementNotificationPlusDefaultSize.height*GKNotificationScaleFactor());
+    [self initWithFrame:frame title:achievement.title message:achievement.achievedDescription image:achievement.image];
     return self;
 }
 
@@ -102,37 +141,66 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 {
     CGRect frame = CGRectMake(0,
                               0,
-                              kGKAchievementNotificationPlusDefaultSize.width*ABUniversalScaleFactor(),
-                              kGKAchievementNotificationPlusDefaultSize.height*ABUniversalScaleFactor());
-    [self initWithFrame:frame];
+                              kGKAchievementNotificationPlusDefaultSize.width*GKNotificationScaleFactor(),
+                              kGKAchievementNotificationPlusDefaultSize.height*GKNotificationScaleFactor());
+    [self initWithFrame:frame title:title message:message image:image];
     self.title = title;
     self.message = message;
     return self;
 }
 
-- (id) initWithFrame:(CGRect)frame
+- (id) initWithFrame:(CGRect)frame title:(NSString*)title message:(NSString*)message image:(UIImage*)image
 {
     if ((self = [super initWithFrame:frame]))
     {
         // create the GK background
-        UIImage *backgroundStretch = [[UIImage imageNamed:@"gk-notification.png"] stretchableImageWithLeftCapWidth:8.0f*ABUniversalScaleFactor() topCapHeight:0.0f];
+        UIImage* initialImage = nil;
+        if (kGKAchievementNotificationPlusFakePad && (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone))
+        {
+            initialImage = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle] pathForResource:kGKAchievementNotificationPlusBackgroundGraphic ofType:nil]];
+        }
+        else
+        {
+            initialImage = [UIImage imageWithContentsOfFileUsingRetinaAt1xScale:[[NSBundle mainBundle] pathForResource:kGKAchievementNotificationPlusBackgroundGraphic ofType:nil]];
+        }
+        UIImage *backgroundStretch = [initialImage
+                                      stretchableImageWithLeftCapWidth:kGKAchievementNotificationPlusBackgroundGraphicLeftCapWidth*GKNotificationScaleFactor()
+                                      topCapHeight:0.0f];
         UIImageView *tBackground = [[UIImageView alloc] initWithFrame:frame];
         tBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         tBackground.image = backgroundStretch;
         self.background = tBackground;
         self.opaque = NO;
         [tBackground release];
+
+        if (kGKAchievementNotificationPlusHasShadow == YES)
+        {
+            CGRect shadowFrame = frame;
+            shadowFrame.origin = CGPointMake(shadowFrame.origin.x+kGKAchievementNotificationPlusShadowOffset.x*GKNotificationScaleFactor(),
+                                             shadowFrame.origin.y+kGKAchievementNotificationPlusShadowOffset.y*GKNotificationScaleFactor());
+            UIView* shadow = [[UIView alloc] initWithFrame:shadowFrame];
+            shadow.backgroundColor = [UIColor blackColor];
+            shadow.alpha = kGKAchievementNotificationPlusShadowAlpha;
+            shadow.layer.cornerRadius = kGKAchievementNotificationPlusShadowCornerRounding*GKNotificationScaleFactor();
+            self.shadow = shadow;
+            [self addSubview:self.shadow];
+        }
+
         [self addSubview:self.background];
 
-        CGRect r1 = CGRectMultiply(kGKAchievementNotificationPlusText1, ABUniversalScaleFactor());
-        CGRect r2 = CGRectMultiply(kGKAchievementNotificationPlusText2, ABUniversalScaleFactor());
+        CGRect r1 = CGRectMultiply(kGKAchievementNotificationPlusText1, GKNotificationScaleFactor());
+        CGRect r2 = CGRectMultiply(kGKAchievementNotificationPlusText2, GKNotificationScaleFactor());
 
         // create the text label
         UILabel *tTextLabel = [[UILabel alloc] initWithFrame:r1];
         tTextLabel.textAlignment = UITextAlignmentCenter;
+        tTextLabel.adjustsFontSizeToFitWidth = NO;
         tTextLabel.backgroundColor = [UIColor clearColor];
-        tTextLabel.textColor = [UIColor whiteColor];
-        tTextLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:15.0f*ABUniversalScaleFactor()];
+        tTextLabel.textColor = [UIColor colorWithRed:kGKAchievementNotificationPlusText1Color[0]
+                                               green:kGKAchievementNotificationPlusText1Color[1]
+                                                blue:kGKAchievementNotificationPlusText1Color[2]
+                                               alpha:1.0f];
+        tTextLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:kGKAchievementNotificationPlusText1Size*GKNotificationScaleFactor()];
         tTextLabel.text = NSLocalizedString(@"Achievement Unlocked", @"Achievemnt Unlocked Message");
         self.textLabel = tTextLabel;
         [tTextLabel release];
@@ -140,29 +208,29 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
         // detail label
         UILabel *tDetailLabel = [[UILabel alloc] initWithFrame:r2];
         tDetailLabel.textAlignment = UITextAlignmentCenter;
-        tDetailLabel.adjustsFontSizeToFitWidth = YES;
-        tDetailLabel.minimumFontSize = 10.0f*ABUniversalScaleFactor();
+        tDetailLabel.adjustsFontSizeToFitWidth = NO;
         tDetailLabel.backgroundColor = [UIColor clearColor];
-        tDetailLabel.textColor = [UIColor whiteColor];
-        tDetailLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:11.0f*ABUniversalScaleFactor()];
+        tDetailLabel.textColor = [UIColor colorWithRed:kGKAchievementNotificationPlusText2Color[0]
+                                                 green:kGKAchievementNotificationPlusText2Color[1]
+                                                  blue:kGKAchievementNotificationPlusText2Color[2]
+                                                 alpha:1.0f];
+        tDetailLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:kGKAchievementNotificationPlusText2Size*GKNotificationScaleFactor()];
         self.detailLabel = tDetailLabel;
         [tDetailLabel release];
 
-        if (self.achievement)
+        if (title)
         {
-            self.textLabel.text = self.achievement.title;
-            self.detailLabel.text = self.achievement.achievedDescription;
+            self.title = title;
+            self.textLabel.text = self.title;
         }
-        else
+        if (message)
         {
-            if (self.title)
-            {
-                self.textLabel.text = self.title;
-            }
-            if (self.message)
-            {
-                self.detailLabel.text = self.message;
-            }
+            self.message = message;
+            self.detailLabel.text = self.message;
+        }
+        if (image)
+        {
+            [self setImage:image];
         }
 
         [self addSubview:self.textLabel];
@@ -176,9 +244,9 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 {
     self.handlerDelegate = nil;
     self.logo = nil;
-    
-    [_achievement release];
+
     [_background release];
+    [_shadow release];
     [_detailLabel release];
     [_logo release];
     [_message release];
@@ -205,11 +273,11 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
 
     if (kGKAchievementNotificationPlusIsCentered == YES)
     {
-        frame.origin = CGPointMake((self.superview.bounds.size.width-frame.size.width)/2.0f, kGKAchievementNotificationPlusSetToOutOrigin.y*ABUniversalScaleFactor());
+        frame.origin = CGPointMake((self.superview.bounds.size.width-frame.size.width)/2.0f, kGKAchievementNotificationPlusSetToOutOrigin.y*GKNotificationScaleFactor());
     }
     else
     {
-        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x*ABUniversalScaleFactor(), kGKAchievementNotificationPlusSetToOutOrigin.y*ABUniversalScaleFactor());
+        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x*GKNotificationScaleFactor(), kGKAchievementNotificationPlusSetToOutOrigin.y*GKNotificationScaleFactor());
     }
 
     self.frame = frame;
@@ -225,7 +293,7 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
     }
     else
     {
-        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x*ABUniversalScaleFactor(), -self.bounds.size.height);
+        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x*GKNotificationScaleFactor(), -self.bounds.size.height);
     }
 
     self.frame = frame;
@@ -288,15 +356,15 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
     {
         if (!self.logo)
         {
-            UIImageView *tLogo = [[UIImageView alloc] initWithFrame:CGRectMultiply(CGRectMake(7.0f, 6.0f, 34.0f, 34.0f), ABUniversalScaleFactor())];
+            UIImageView *tLogo = [[UIImageView alloc] initWithFrame:CGRectMultiply(CGRectMake(7.0f, 6.0f, 34.0f, 34.0f), GKNotificationScaleFactor())];
             tLogo.contentMode = UIViewContentModeCenter;
             self.logo = tLogo;
             [tLogo release];
             [self addSubview:self.logo];
         }
         self.logo.image = image;
-        self.textLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText1WLogo, ABUniversalScaleFactor());
-        self.detailLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText2WLogo, ABUniversalScaleFactor());
+        self.textLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText1WLogo, GKNotificationScaleFactor());
+        self.detailLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText2WLogo, GKNotificationScaleFactor());
     }
     else
     {
@@ -304,8 +372,8 @@ CGRect kGKAchievementNotificationPlusText2WLogo;
         {
             [self.logo removeFromSuperview];
         }
-        self.textLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText1, ABUniversalScaleFactor());
-        self.detailLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText2, ABUniversalScaleFactor());
+        self.textLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText1, GKNotificationScaleFactor());
+        self.detailLabel.frame = CGRectMultiply(kGKAchievementNotificationPlusText2, GKNotificationScaleFactor());
     }
 }
 

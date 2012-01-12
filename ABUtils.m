@@ -1,14 +1,14 @@
 //
 //  ABUtils.m
-//  GKAchievementHandlerPlusTest
 //
 //  Created by Alexei Baboulevitch on 1/11/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Copyright 2012 Wild Needle Inc. All rights reserved.
 //
 
 #import "ABUtils.h"
 
-inline NSUInteger ABUniversalScaleFactor(void)
+
+NSUInteger ABUniversalScaleFactor(void)
 {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
     {
@@ -20,7 +20,7 @@ inline NSUInteger ABUniversalScaleFactor(void)
     }
 }
 
-inline CGRect CGRectMultiply(CGRect rect, CGFloat scalar)
+CGRect CGRectMultiply(CGRect rect, CGFloat scalar)
 {
     return CGRectMake(rect.origin.x*scalar, rect.origin.y*scalar, rect.size.width*scalar, rect.size.height*scalar);
 }

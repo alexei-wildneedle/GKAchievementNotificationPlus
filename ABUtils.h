@@ -1,12 +1,14 @@
 //
 //  ABUtils.h
-//  GKAchievementHandlerPlusTest
 //
 //  Created by Alexei Baboulevitch on 1/11/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Copyright 2012 Wild Needle Inc. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
-extern inline NSUInteger ABUniversalScaleFactor(void);
-extern inline CGRect CGRectMultiply(CGRect rect, CGFloat scalar);
+
+// TODO: make inline
+
+NSUInteger ABUniversalScaleFactor(void);
+CGRect CGRectMultiply(CGRect rect, CGFloat scalar);

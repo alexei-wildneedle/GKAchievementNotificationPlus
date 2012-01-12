@@ -14,7 +14,17 @@
 @class GKAchievementNotificationPlus;
 
 
+// TODO: move to center on rotation
+
+
 extern BOOL kGKAchievementNotificationPlusFakePad;
+
+extern NSString* kGKAchievementNotificationPlusBackgroundGraphic;
+extern CGFloat kGKAchievementNotificationPlusBackgroundGraphicLeftCapWidth;
+extern BOOL kGKAchievementNotificationPlusHasShadow;
+extern CGPoint kGKAchievementNotificationPlusShadowOffset;
+extern CGFloat kGKAchievementNotificationPlusShadowAlpha;
+extern CGFloat kGKAchievementNotificationPlusShadowCornerRounding;
 
 extern CGSize kGKAchievementNotificationPlusDefaultSize;
 extern BOOL kGKAchievementNotificationPlusIsCentered;
@@ -69,13 +79,12 @@ extern CGRect kGKAchievementNotificationPlusText2WLogo;
  */
 @interface GKAchievementNotificationPlus : UIView
 {
-    GKAchievementDescription  *_achievement;  /**< Description of achievement earned. */
-
     NSString *_message;  /**< Optional custom achievement message. */
     NSString *_title;    /**< Optional custom achievement title. */
 
     UIImageView  *_background;  /**< Stretchable background view. */
     UIImageView  *_logo;        /**< Logo that is displayed on the left. */
+    UIView* _shadow;
 
     UILabel      *_textLabel;    /**< Text label used to display achievement title. */
     UILabel      *_detailLabel;  /**< Text label used to display achievement description. */
@@ -83,10 +92,10 @@ extern CGRect kGKAchievementNotificationPlusText2WLogo;
     id<GKAchievementNotificationPlusDelegate> _handlerDelegate;  /**< Reference to nofification handler. */
 }
 
-/** Description of achievement earned. */
-@property (nonatomic, retain) GKAchievementDescription *achievement;
 /** Optional custom achievement message. */
 @property (nonatomic, retain) NSString *message;
+// Shadow that stays under the message box.
+@property (nonatomic, retain) UIView* shadow;
 /** Optional custom achievement title. */
 @property (nonatomic, retain) NSString *title;
 /** Stretchable background view. */
@@ -123,6 +132,6 @@ extern CGRect kGKAchievementNotificationPlusText2WLogo;
  * Change the logo that appears on the left.
  * @param image  The image to display.
  */
-- (void)setImage:(UIImage *)image;
+- (void) setImage:(UIImage *)image;
 
 @end

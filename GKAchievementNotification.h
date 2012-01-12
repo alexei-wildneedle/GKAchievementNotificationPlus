@@ -13,14 +13,14 @@
 #define kGKAchievementAnimeTime     0.4f
 #define kGKAchievementDisplayTime   1.75f
 
-#define kGKAchievementDefaultSize   CGRectMake(0.0f, 0.0f, 284.0f, 52.0f);
-#define kGKAchievementFrameStart    CGRectMake(18.0f, -53.0f, 284.0f, 52.0f);
-#define kGKAchievementFrameEnd      CGRectMake(18.0f, 10.0f, 284.0f, 52.0f);
+#define kGKAchievementDefaultSize   CGRectMake(0.0f, 0.0f, 284.0f, 52.0f)
+#define kGKAchievementFrameStart    CGRectMake(18.0f, -53.0f, 284.0f, 52.0f)
+#define kGKAchievementFrameEnd      CGRectMake(18.0f, 10.0f, 284.0f, 52.0f)
 
-#define kGKAchievementText1         CGRectMake(10.0, 6.0f, 264.0f, 22.0f);
-#define kGKAchievementText2         CGRectMake(10.0, 20.0f, 264.0f, 22.0f);
-#define kGKAchievementText1WLogo    CGRectMake(45.0, 6.0f, 229.0f, 22.0f);
-#define kGKAchievementText2WLogo    CGRectMake(45.0, 20.0f, 229.0f, 22.0f);
+#define kGKAchievementText1         CGRectMake(10.0, 6.0f, 264.0f, 22.0f)
+#define kGKAchievementText2         CGRectMake(10.0, 20.0f, 264.0f, 22.0f)
+#define kGKAchievementText1WLogo    CGRectMake(45.0, 6.0f, 229.0f, 22.0f)
+#define kGKAchievementText2WLogo    CGRectMake(45.0, 20.0f, 229.0f, 22.0f)
 
 #pragma mark -
 

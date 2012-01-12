@@ -14,6 +14,21 @@
 @class GKAchievementNotificationPlus;
 
 
+extern BOOL kGKAchievementNotificationPlusFakePad;
+
+extern CGSize kGKAchievementNotificationPlusDefaultSize;
+extern BOOL kGKAchievementNotificationPlusIsCentered;
+extern CGPoint kGKAchievementNotificationPlusSetToOutOrigin;
+
+extern CGFloat kGKAchievementNotificationPlusAnimationTime;
+extern CGFloat kGKAchievementNotificationPlusDisplayTime;
+
+extern CGRect kGKAchievementNotificationPlusText1;
+extern CGRect kGKAchievementNotificationPlusText2;
+extern CGRect kGKAchievementNotificationPlusText1WLogo;
+extern CGRect kGKAchievementNotificationPlusText2WLogo;
+
+
 /**
  * The handler delegate responds to hiding and showing
  * of the game center notifications.
@@ -90,9 +105,8 @@
 // update the layout if changed, but this method should cover most use cases.
 + (void) setDefaults;
 
-- (GKAchievementNotificationPlus*) achievementNotificationWithDescription:(GKAchievementDescription*)achievement;
-- (GKAchievementNotificationPlus*) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
-
++ (id) achievementNotificationWithDescription:(GKAchievementDescription*)achievement;
++ (id) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 - (id) initWithDescription:(GKAchievementDescription*)achievement;
 - (id) initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 

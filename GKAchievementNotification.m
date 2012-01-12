@@ -6,7 +6,6 @@
 //  $Id$
 //
 
-#import <GameKit/GameKit.h>
 #import "GKAchievementNotification.h"
 
 #pragma mark -

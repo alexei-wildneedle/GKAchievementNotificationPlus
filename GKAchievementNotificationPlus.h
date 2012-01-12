@@ -15,28 +15,43 @@
 
 
 // TODO: move to center on rotation
+// TODO: add note about universal scale factor
 
 
-extern BOOL kGKAchievementNotificationPlusFakePad;
+struct GKAchievementNotificationPlusDefaults
+{
+    BOOL fakePad; // multiplies all the point values by 2 and uses the @2x graphics if on iPad
 
-extern NSString* kGKAchievementNotificationPlusBackgroundGraphic;
-extern CGFloat kGKAchievementNotificationPlusBackgroundGraphicLeftCapWidth;
-extern BOOL kGKAchievementNotificationPlusHasShadow;
-extern CGPoint kGKAchievementNotificationPlusShadowOffset;
-extern CGFloat kGKAchievementNotificationPlusShadowAlpha;
-extern CGFloat kGKAchievementNotificationPlusShadowCornerRounding;
+    NSString* backgroundGraphic;
+    CGFloat backgroundGraphicLeftCapWidth;
+    BOOL hasShadow;
+    CGPoint shadowOffset;
+    CGFloat shadowAlpha;
+    CGFloat shadowCornerRadius;
 
-extern CGSize kGKAchievementNotificationPlusDefaultSize;
-extern BOOL kGKAchievementNotificationPlusIsCentered;
-extern CGPoint kGKAchievementNotificationPlusSetToOutOrigin;
+    CGSize defaultSize;
+    BOOL isCentered; // if this is set to YES, the x coordinate of kGKAchievementNotificationPlusSetToOutOrigin is ignored
+    CGPoint setToOutOrigin;
 
-extern CGFloat kGKAchievementNotificationPlusAnimationTime;
-extern CGFloat kGKAchievementNotificationPlusDisplayTime;
+    CGFloat animationTime;
+    CGFloat displayTime;
 
-extern CGRect kGKAchievementNotificationPlusText1;
-extern CGRect kGKAchievementNotificationPlusText2;
-extern CGRect kGKAchievementNotificationPlusText1WLogo;
-extern CGRect kGKAchievementNotificationPlusText2WLogo;
+    CGFloat text1Color[3];
+    CGFloat text1Size;
+    CGFloat text2Color[3];
+    CGFloat text2Size;
+
+    NSString* text1Font;
+    NSString* text2Font;
+
+    CGRect text1Frame;
+    CGRect text2Frame;
+    CGRect text1WithImageFrame;
+    CGRect text2WithImageFrame;
+
+    CGFloat iconCornerRadius;
+};
+typedef struct GKAchievementNotificationPlusDefaults GKAchievementNotificationPlusDefaults;
 
 
 /**
@@ -109,15 +124,12 @@ extern CGRect kGKAchievementNotificationPlusText2WLogo;
 /** Reference to nofification handler. */
 @property (nonatomic, retain) id<GKAchievementNotificationPlusDelegate> handlerDelegate;
 
-// Sets up the default configuration constants for this class. Override in subclass if you want your own behaviors.
-// Another approach would be to have an instance-specific container property or several properties that would then
-// update the layout if changed, but this method should cover most use cases.
-+ (void) setDefaults;
-
 + (id) achievementNotificationWithDescription:(GKAchievementDescription*)achievement;
 + (id) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 - (id) initWithDescription:(GKAchievementDescription*)achievement;
 - (id) initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
+
+- (void) setImage:(UIImage*)image;
 
 // Animate the achievement notification onto the current window, then animate out. Similar to UIAlertView's show method.
 - (void) show;
@@ -128,10 +140,24 @@ extern CGRect kGKAchievementNotificationPlusText2WLogo;
 - (void)animateIn;
 - (void)animateOut;
 
-/**
- * Change the logo that appears on the left.
- * @param image  The image to display.
- */
-- (void) setImage:(UIImage *)image;
+// The methods below are all for overriding in subclasses.
+
+// To override the default config in a subclass, create a static GKAchievementNotificationPlusDefaults and override the two methods below.
+// setDefaults should set all the struct variables, and defaults should return the static variable.
++ (void) setDefaults;
++ (GKAchievementNotificationPlusDefaults) defaults;
+
+// Override these methods to create custom graphics. Do not call manually.
+- (UIImageView*) generateBackground;
+- (UIView*) generateShadow;
+- (UILabel*) generateTitleLabel;
+- (UILabel*) generateMessageLabel;
+- (UIImageView*) generateLogo;
+
+// Override these methods to perform actions at certain points during the animation. Correspond to delegate callbacks. Defaults do nothing.
+- (void) willShowActions;
+- (void) didShowActions;
+- (void) willHideActions;
+- (void) didHideActions;
 
 @end

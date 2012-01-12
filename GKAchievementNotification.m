@@ -1,9 +1,11 @@
 //
-//  GKAchievementNotification.m
+//  GKAchievementNotificationPlus.m
 //
 //  Created by Benjamin Borowski on 9/30/10.
 //  Copyright 2010 Typeoneerror Studios. All rights reserved.
-//  $Id$
+//
+//  Modified by Alexei Baboulevitch on 1/11/12.
+//  Copyright 2012 Wild Needle. All rights reserved.
 //
 
 #import "GKAchievementNotification.h"

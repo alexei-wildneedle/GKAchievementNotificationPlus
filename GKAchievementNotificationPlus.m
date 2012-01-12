@@ -220,12 +220,6 @@ static CGRect kGKAchievementNotificationPlusText2WLogo;
     self.frame = frame;
 }
 
-- (void) setFrame:(CGRect)frame
-{
-    [super setFrame:frame];
-    NSLog(@"%@", NSStringFromCGRect(frame));
-}
-
 - (void)animateIn
 {
     [self delegateCallback:@selector(willShowAchievementNotification:) withObject:self];

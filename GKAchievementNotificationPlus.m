@@ -10,9 +10,21 @@
 
 #import "GKAchievementNotificationPlus.h"
 
-#pragma mark -
 
-@interface GKAchievementNotificationPlus(private)
+static CGSize kGKAchievementNotificationPlusDefaultSize;
+static BOOL kGKAchievementNotificationPlusIsCentered; // if this is set to YES, the x coordinate of kGKAchievementNotificationPlusSetToOutOrigin is ignored
+static CGPoint kGKAchievementNotificationPlusSetToOutOrigin;
+
+static CGFloat kGKAchievementNotificationPlusAnimationTime;
+static CGFloat kGKAchievementNotificationPlusDisplayTime;
+
+static CGRect kGKAchievementNotificationPlusText1;
+static CGRect kGKAchievementNotificationPlusText2;
+static CGRect kGKAchievementNotificationPlusText1WLogo;
+static CGRect kGKAchievementNotificationPlusText2WLogo;
+
+
+@interface GKAchievementNotificationPlus ()
 
 - (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
@@ -20,36 +32,6 @@
 
 @end
 
-#pragma mark -
-
-@implementation GKAchievementNotificationPlus(private)
-
-- (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
-{
-    [self delegateCallback:@selector(didShowAchievementNotification:) withObject:self];
-    [self performSelector:@selector(animateOut) withObject:nil afterDelay:kGKAchievementDisplayTime];
-}
-
-- (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
-{
-    [self delegateCallback:@selector(didHideAchievementNotification:) withObject:self];
-    [self removeFromSuperview];
-}
-
-- (void)delegateCallback:(SEL)selector withObject:(id)object
-{
-    if (self.handlerDelegate)
-    {
-        if ([self.handlerDelegate respondsToSelector:selector])
-        {
-            [self.handlerDelegate performSelector:selector withObject:object];
-        }
-    }
-}
-
-@end
-
-#pragma mark -
 
 @implementation GKAchievementNotificationPlus
 
@@ -63,29 +45,61 @@
 @synthesize textLabel=_textLabel;
 
 #pragma mark -
+#pragma mark Static Methods
 
-- (id)initWithAchievementDescription:(GKAchievementDescription *)achievement
++ (void) initialize
 {
-    CGRect frame = kGKAchievementDefaultSize;
+    [[self class] setDefaults];
+}
+
++ (void) setDefaults
+{
+    kGKAchievementNotificationPlusDefaultSize = CGSizeMake(284, 52);
+    kGKAchievementNotificationPlusIsCentered = YES;
+
+    kGKAchievementNotificationPlusSetToOutOrigin = CGPointMake(0, 5);
+    kGKAchievementNotificationPlusAnimationTime = 0.4f;
+    kGKAchievementNotificationPlusDisplayTime = 1.75f;
+
+    kGKAchievementNotificationPlusText1 = CGRectMake(10.0, 6.0f, 264.0f, 22.0f);
+    kGKAchievementNotificationPlusText2 = CGRectMake(10.0, 20.0f, 264.0f, 22.0f);
+    kGKAchievementNotificationPlusText1WLogo = CGRectMake(45.0, 6.0f, 229.0f, 22.0f);
+    kGKAchievementNotificationPlusText2WLogo = CGRectMake(45.0, 20.0f, 229.0f, 22.0f);
+}
+
+#pragma mark -
+#pragma mark Initializers
+
+- (GKAchievementNotificationPlus*) achievementNotificationWithDescription:(GKAchievementDescription*)achievement
+{
+    GKAchievementNotificationPlus* result = [[GKAchievementNotificationPlus alloc] initWithDescription:achievement];
+    return [result autorelease];
+}
+
+- (GKAchievementNotificationPlus*) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image
+{
+    GKAchievementNotificationPlus* result = [[GKAchievementNotificationPlus alloc] initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image];
+    return [result autorelease];
+}
+
+- (id) initWithDescription:(GKAchievementDescription*)achievement
+{
+    CGRect frame = CGRectMake(0, 0, kGKAchievementNotificationPlusDefaultSize.width, kGKAchievementNotificationPlusDefaultSize.height);
+    [self initWithFrame:frame];
     self.achievement = achievement;
-    if ((self = [self initWithFrame:frame]))
-    {
-    }
     return self;
 }
 
-- (id)initWithTitle:(NSString *)title andMessage:(NSString *)message
+- (id) initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image
 {
-    CGRect frame = kGKAchievementDefaultSize;
+    CGRect frame = CGRectMake(0, 0, kGKAchievementNotificationPlusDefaultSize.width, kGKAchievementNotificationPlusDefaultSize.height);
+    [self initWithFrame:frame];
     self.title = title;
     self.message = message;
-    if (self == [self initWithFrame:frame])
-    {
-    }
     return self;
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (id) initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame]))
     {
@@ -99,8 +113,8 @@
         [tBackground release];
         [self addSubview:self.background];
 
-        CGRect r1 = kGKAchievementText1;
-        CGRect r2 = kGKAchievementText2;
+        CGRect r1 = kGKAchievementNotificationPlusText1;
+        CGRect r2 = kGKAchievementNotificationPlusText2;
 
         // create the text label
         UILabel *tTextLabel = [[UILabel alloc] initWithFrame:r1];
@@ -143,13 +157,12 @@
         [self addSubview:self.textLabel];
         [self addSubview:self.detailLabel];
     }
+
     return self;
 }
 
 - (void)dealloc
 {
-    NSLog(@"dealloc: GKAchievementNotification");
-    
     self.handlerDelegate = nil;
     self.logo = nil;
     
@@ -166,30 +179,103 @@
 
 
 #pragma mark -
+#pragma mark Animation and Display Methods
+
+- (void) show
+{
+    UIWindow* currentWindow = [UIApplication sharedApplication].keyWindow;
+    [(UIView*)[[currentWindow subviews] objectAtIndex:0] addSubview:self]; //according to StackOverflow, only the first view responds to rotations
+    [self animateIn];
+}
+
+- (void) setToIn
+{
+    CGRect frame = self.frame;
+
+    if (kGKAchievementNotificationPlusIsCentered == YES)
+    {
+        frame.origin = CGPointMake((self.superview.bounds.size.width-frame.size.width)/2.0f, kGKAchievementNotificationPlusSetToOutOrigin.y);
+    }
+    else
+    {
+        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x, kGKAchievementNotificationPlusSetToOutOrigin.y);
+    }
+
+    self.frame = frame;
+}
+
+- (void) setToOut
+{
+    CGRect frame = self.frame;
+
+    if (kGKAchievementNotificationPlusIsCentered == YES)
+    {
+        frame.origin = CGPointMake((self.superview.bounds.size.width-frame.size.width)/2.0f, -self.bounds.size.height);
+    }
+    else
+    {
+        frame.origin = CGPointMake(kGKAchievementNotificationPlusSetToOutOrigin.x, -self.bounds.size.height);
+    }
+
+    self.frame = frame;
+}
+
+- (void) setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    NSLog(@"%@", NSStringFromCGRect(frame));
+}
 
 - (void)animateIn
 {
     [self delegateCallback:@selector(willShowAchievementNotification:) withObject:self];
+    [self setToOut];
     [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:kGKAchievementAnimeTime];
+    [UIView setAnimationDuration:kGKAchievementNotificationPlusAnimationTime];
     [UIView setAnimationDelegate:self];
     [UIView setAnimationBeginsFromCurrentState:YES];
     [UIView setAnimationDidStopSelector:@selector(animationInDidStop:finished:context:)];
-    self.frame = kGKAchievementFrameEnd;
+    [self setToIn];
     [UIView commitAnimations];
 }
 
 - (void)animateOut
 {
     [self delegateCallback:@selector(willHideAchievementNotification:) withObject:self];
+    [self setToIn];
     [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:kGKAchievementAnimeTime];
+    [UIView setAnimationDuration:kGKAchievementNotificationPlusAnimationTime];
     [UIView setAnimationDelegate:self];
     [UIView setAnimationBeginsFromCurrentState:YES];
     [UIView setAnimationDidStopSelector:@selector(animationOutDidStop:finished:context:)];
-    self.frame = kGKAchievementFrameStart;
+    [self setToOut];
     [UIView commitAnimations];
 }
+
+- (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
+{
+    [self delegateCallback:@selector(didShowAchievementNotification:) withObject:self];
+    [self performSelector:@selector(animateOut) withObject:nil afterDelay:kGKAchievementNotificationPlusDisplayTime];
+}
+
+- (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
+{
+    [self delegateCallback:@selector(didHideAchievementNotification:) withObject:self];
+    [self removeFromSuperview];
+}
+
+- (void)delegateCallback:(SEL)selector withObject:(id)object
+{
+    if (self.handlerDelegate)
+    {
+        if ([self.handlerDelegate respondsToSelector:selector])
+        {
+            [self.handlerDelegate performSelector:selector withObject:object];
+        }
+    }
+}
+
+#pragma mark -
 
 - (void)setImage:(UIImage *)image
 {
@@ -204,8 +290,8 @@
             [self addSubview:self.logo];
         }
         self.logo.image = image;
-        self.textLabel.frame = kGKAchievementText1WLogo;
-        self.detailLabel.frame = kGKAchievementText2WLogo;
+        self.textLabel.frame = kGKAchievementNotificationPlusText1WLogo;
+        self.detailLabel.frame = kGKAchievementNotificationPlusText2WLogo;
     }
     else
     {
@@ -213,8 +299,8 @@
         {
             [self.logo removeFromSuperview];
         }
-        self.textLabel.frame = kGKAchievementText1;
-        self.detailLabel.frame = kGKAchievementText2;
+        self.textLabel.frame = kGKAchievementNotificationPlusText1;
+        self.detailLabel.frame = kGKAchievementNotificationPlusText2;
     }
 }
 

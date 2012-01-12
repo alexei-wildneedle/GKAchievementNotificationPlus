@@ -13,19 +13,6 @@
 
 @class GKAchievementNotificationPlus;
 
-#define kGKAchievementAnimeTime     0.4f
-#define kGKAchievementDisplayTime   1.75f
-
-#define kGKAchievementDefaultSize   CGRectMake(0.0f, 0.0f, 284.0f, 52.0f)
-#define kGKAchievementFrameStart    CGRectMake(18.0f, -53.0f, 284.0f, 52.0f)
-#define kGKAchievementFrameEnd      CGRectMake(18.0f, 10.0f, 284.0f, 52.0f)
-
-#define kGKAchievementText1         CGRectMake(10.0, 6.0f, 264.0f, 22.0f)
-#define kGKAchievementText2         CGRectMake(10.0, 20.0f, 264.0f, 22.0f)
-#define kGKAchievementText1WLogo    CGRectMake(45.0, 6.0f, 229.0f, 22.0f)
-#define kGKAchievementText2WLogo    CGRectMake(45.0, 20.0f, 229.0f, 22.0f)
-
-#pragma mark -
 
 /**
  * The handler delegate responds to hiding and showing
@@ -61,7 +48,6 @@
 
 @end
 
-#pragma mark -
 
 /**
  * The GKAchievementNotification is a view for showing the achievement earned.
@@ -99,31 +85,24 @@
 /** Reference to nofification handler. */
 @property (nonatomic, retain) id<GKAchievementNotificationPlusDelegate> handlerDelegate;
 
-#pragma mark -
+// Sets up the default configuration constants for this class. Override in subclass if you want your own behaviors.
+// Another approach would be to have an instance-specific container property or several properties that would then
+// update the layout if changed, but this method should cover most use cases.
++ (void) setDefaults;
 
-/**
- * Create a notification with an achievement description.
- * @param achievement  Achievement description to notify user of earning.
- * @return a GKAchievementNoficiation view.
- */
-- (id)initWithAchievementDescription:(GKAchievementDescription *)achievement;
+- (GKAchievementNotificationPlus*) achievementNotificationWithDescription:(GKAchievementDescription*)achievement;
+- (GKAchievementNotificationPlus*) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 
-/**
- * Create a notification with a custom title and description.
- * @param title    Title to display in notification.
- * @param message  Descriotion to display in notification.
- * @return a GKAchievementNoficiation view.
- */
-- (id)initWithTitle:(NSString *)title andMessage:(NSString *)message;
+- (id) initWithDescription:(GKAchievementDescription*)achievement;
+- (id) initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 
-/**
- * Show the notification.
- */
+// Animate the achievement notification onto the current window, then animate out. Similar to UIAlertView's show method.
+- (void) show;
+
+// Manually set or animate to in or out position.
+- (void) setToIn;
+- (void) setToOut;
 - (void)animateIn;
-
-/**
- * Hide the notificaiton.
- */
 - (void)animateOut;
 
 /**

@@ -8,7 +8,7 @@
 
 #import <GameKit/GameKit.h>
 #import "GKAchievementHandler.h"
-#import "GKAchievementNotification.h"
+#import "GKAchievementNotificationPlus.h"
 
 static GKAchievementHandler *defaultHandler = nil;
 
@@ -16,7 +16,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 @interface GKAchievementHandler(private)
 
-- (void)displayNotification:(GKAchievementNotification *)notification;
+- (void)displayNotification:(GKAchievementNotificationPlus *)notification;
 
 @end
 
@@ -24,7 +24,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 @implementation GKAchievementHandler(private)
 
-- (void)displayNotification:(GKAchievementNotification *)notification
+- (void)displayNotification:(GKAchievementNotificationPlus *)notification
 {
     if (self.image != nil)
     {
@@ -78,7 +78,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 - (void)notifyAchievement:(GKAchievementDescription *)achievement
 {
-    GKAchievementNotification *notification = [[[GKAchievementNotification alloc] initWithAchievementDescription:achievement] autorelease];
+    GKAchievementNotificationPlus *notification = [[[GKAchievementNotificationPlus alloc] initWithAchievementDescription:achievement] autorelease];
     notification.frame = kGKAchievementFrameStart;
     notification.handlerDelegate = self;
 
@@ -91,7 +91,7 @@ static GKAchievementHandler *defaultHandler = nil;
 
 - (void)notifyAchievementTitle:(NSString *)title andMessage:(NSString *)message
 {
-    GKAchievementNotification *notification = [[[GKAchievementNotification alloc] initWithTitle:title andMessage:message] autorelease];
+    GKAchievementNotificationPlus *notification = [[[GKAchievementNotificationPlus alloc] initWithTitle:title andMessage:message] autorelease];
     notification.frame = kGKAchievementFrameStart;
     notification.handlerDelegate = self;
 
@@ -105,12 +105,12 @@ static GKAchievementHandler *defaultHandler = nil;
 #pragma mark -
 #pragma mark GKAchievementHandlerDelegate implementation
 
-- (void)didHideAchievementNotification:(GKAchievementNotification *)notification
+- (void)didHideAchievementNotification:(GKAchievementNotificationPlus *)notification
 {
     [_queue removeObjectAtIndex:0];
     if ([_queue count])
     {
-        [self displayNotification:(GKAchievementNotification *)[_queue objectAtIndex:0]];
+        [self displayNotification:(GKAchievementNotificationPlus *)[_queue objectAtIndex:0]];
     }
 }
 

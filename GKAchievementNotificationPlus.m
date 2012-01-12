@@ -8,11 +8,11 @@
 //  Copyright 2012 Wild Needle. All rights reserved.
 //
 
-#import "GKAchievementNotification.h"
+#import "GKAchievementNotificationPlus.h"
 
 #pragma mark -
 
-@interface GKAchievementNotification(private)
+@interface GKAchievementNotificationPlus(private)
 
 - (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
@@ -22,7 +22,7 @@
 
 #pragma mark -
 
-@implementation GKAchievementNotification(private)
+@implementation GKAchievementNotificationPlus(private)
 
 - (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
 {
@@ -51,7 +51,7 @@
 
 #pragma mark -
 
-@implementation GKAchievementNotification
+@implementation GKAchievementNotificationPlus
 
 @synthesize achievement=_achievement;
 @synthesize background=_background;

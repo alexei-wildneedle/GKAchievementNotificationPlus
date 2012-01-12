@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "GKAchievementNotification.h"
+#import "GKAchievementNotificationPlus.h"
 
 /**
  * Game Center has a notification window that slides down and informs the GKLocalPlayer 
@@ -18,7 +18,7 @@
  * The GKAchievementHandler is a singleton pattern that you can use to 
  * notify the user anywhere in your application that they earned an achievement.
  */
-@interface GKAchievementHandler : NSObject <GKAchievementHandlerDelegate>
+@interface GKAchievementHandler : NSObject <GKAchievementNotificationPlusDelegate>
 {
     UIView         *_topView;  /**< Reference to top view of UIApplication. */
     NSMutableArray *_queue;    /**< Queue of achievement notifiers to display. */

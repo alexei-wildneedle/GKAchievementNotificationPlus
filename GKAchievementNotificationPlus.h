@@ -38,8 +38,10 @@ struct GKAchievementNotificationPlusDefaults
 
     CGFloat text1Color[3];
     CGFloat text1Size;
+    CGFloat text1MinimumSize;
     CGFloat text2Color[3];
     CGFloat text2Size;
+    CGFloat text2MinimumSize;
 
     NSString* text1Font;
     NSString* text2Font;
@@ -49,9 +51,13 @@ struct GKAchievementNotificationPlusDefaults
     CGRect text1WithImageFrame;
     CGRect text2WithImageFrame;
 
+    CGRect iconFrame;
     CGFloat iconCornerRadius;
 };
 typedef struct GKAchievementNotificationPlusDefaults GKAchievementNotificationPlusDefaults;
+
+
+#define GKNotificationScaleFactor() ([[self class] defaults].fakePad ? ABUniversalScaleFactor() : 1)
 
 
 /**
@@ -128,6 +134,7 @@ typedef struct GKAchievementNotificationPlusDefaults GKAchievementNotificationPl
 + (id) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
 - (id) initWithDescription:(GKAchievementDescription*)achievement;
 - (id) initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image;
+- (id) initWithFrame:(CGRect)frame title:(NSString*)title message:(NSString*)message image:(UIImage*)image; // designated initializer
 
 - (void) setImage:(UIImage*)image;
 

@@ -17,12 +17,8 @@
 static GKAchievementNotificationPlusDefaults defaults;
 
 
-#define GKNotificationScaleFactor() ([[self class] defaults].fakePad ? ABUniversalScaleFactor() : 1)
-
-
 @interface GKAchievementNotificationPlus ()
 
-- (id) initWithFrame:(CGRect)frame title:(NSString*)title message:(NSString*)message image:(UIImage*)image; // designated initializer
 - (void)animationInDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)animationOutDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 - (void)delegateCallback:(SEL)selector withObject:(id)object;
@@ -71,10 +67,12 @@ static GKAchievementNotificationPlusDefaults defaults;
     defaults.text1Color[1] = 0xff/(CGFloat)0xff;
     defaults.text1Color[2] = 0xff/(CGFloat)0xff;
     defaults.text1Size = 15.0f;
+    defaults.text1MinimumSize = 15.0f;
     defaults.text2Color[0] = 0xff/(CGFloat)0xff;
     defaults.text2Color[1] = 0xff/(CGFloat)0xff;
     defaults.text2Color[2] = 0xff/(CGFloat)0xff;
     defaults.text2Size = 11.0f;
+    defaults.text2MinimumSize = 11.0f;
 
     defaults.text1Font = @"HelveticaNeue-Bold";
     defaults.text2Font = @"HelveticaNeue";
@@ -84,6 +82,7 @@ static GKAchievementNotificationPlusDefaults defaults;
     defaults.text1WithImageFrame = CGRectMake(45.0, 6.0f, 229.0f, 22.0f);
     defaults.text2WithImageFrame = CGRectMake(45.0, 20.0f, 229.0f, 22.0f);
 
+    defaults.iconFrame = CGRectMake(7.0f, 6.0f, 34.0f, 34.0f);
     defaults.iconCornerRadius = 5.0f;
 }
 
@@ -113,13 +112,13 @@ static GKAchievementNotificationPlusDefaults defaults;
 
 + (id) achievementNotificationWithDescription:(GKAchievementDescription*)achievement
 {
-    GKAchievementNotificationPlus* result = [[GKAchievementNotificationPlus alloc] initWithDescription:achievement];
+    id result = [[[self class] alloc] initWithDescription:achievement];
     return [result autorelease];
 }
 
 + (id) achievementNotificationWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image
 {
-    GKAchievementNotificationPlus* result = [[GKAchievementNotificationPlus alloc] initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image];
+    id result = [[[self class] alloc] initWithTitle:(NSString*)title message:(NSString*)message image:(UIImage*)image];
     return [result autorelease];
 }
 
@@ -129,7 +128,13 @@ static GKAchievementNotificationPlusDefaults defaults;
                               0,
                               [[self class] defaults].defaultSize.width*GKNotificationScaleFactor(),
                               [[self class] defaults].defaultSize.height*GKNotificationScaleFactor());
-    [self initWithFrame:frame title:achievement.title message:achievement.achievedDescription image:achievement.image];
+    UIImage* image = achievement.image;
+    if (image == nil)
+    {
+        image = [GKAchievementDescription placeholderCompletedAchievementImage];
+        // Note that there's also an incomplete achievement image, but it's just a question mark and looks rather ugly.
+    }
+    [self initWithFrame:frame title:achievement.title message:achievement.achievedDescription image:image];
     return self;
 }
 
@@ -217,10 +222,18 @@ static GKAchievementNotificationPlusDefaults defaults;
 
 - (UILabel*) generateTitleLabel
 {
-    CGRect r1 = CGRectMultiply([[self class] defaults].text1Frame, GKNotificationScaleFactor());
+    CGRect r1 = ABRectMultiply([[self class] defaults].text1Frame, GKNotificationScaleFactor());
     UILabel *tTextLabel = [[UILabel alloc] initWithFrame:r1];
     tTextLabel.textAlignment = UITextAlignmentCenter;
-    tTextLabel.adjustsFontSizeToFitWidth = NO;
+    if ([[self class] defaults].text1MinimumSize == [[self class] defaults].text1Size)
+    {
+        tTextLabel.adjustsFontSizeToFitWidth = NO;
+    }
+    else
+    {
+        tTextLabel.adjustsFontSizeToFitWidth = YES;
+        tTextLabel.minimumFontSize = [[self class] defaults].text1MinimumSize*GKNotificationScaleFactor();
+    }
     tTextLabel.backgroundColor = [UIColor clearColor];
     tTextLabel.textColor = [UIColor colorWithRed:[[self class] defaults].text1Color[0]
                                            green:[[self class] defaults].text1Color[1]
@@ -233,10 +246,18 @@ static GKAchievementNotificationPlusDefaults defaults;
 
 - (UILabel*) generateMessageLabel
 {
-    CGRect r2 = CGRectMultiply([[self class] defaults].text2Frame, GKNotificationScaleFactor());
+    CGRect r2 = ABRectMultiply([[self class] defaults].text2Frame, GKNotificationScaleFactor());
     UILabel *tDetailLabel = [[UILabel alloc] initWithFrame:r2];
     tDetailLabel.textAlignment = UITextAlignmentCenter;
-    tDetailLabel.adjustsFontSizeToFitWidth = NO;
+    if ([[self class] defaults].text2MinimumSize == [[self class] defaults].text2Size)
+    {
+        tDetailLabel.adjustsFontSizeToFitWidth = NO;
+    }
+    else
+    {
+        tDetailLabel.adjustsFontSizeToFitWidth = YES;
+        tDetailLabel.minimumFontSize = [[self class] defaults].text2MinimumSize*GKNotificationScaleFactor();
+    }
     tDetailLabel.backgroundColor = [UIColor clearColor];
     tDetailLabel.textColor = [UIColor colorWithRed:[[self class] defaults].text2Color[0]
                                              green:[[self class] defaults].text2Color[1]
@@ -248,7 +269,7 @@ static GKAchievementNotificationPlusDefaults defaults;
 
 - (UIImageView*) generateLogo
 {
-    UIImageView *tLogo = [[UIImageView alloc] initWithFrame:CGRectMultiply(CGRectMake(7.0f, 6.0f, 34.0f, 34.0f), GKNotificationScaleFactor())];
+    UIImageView *tLogo = [[UIImageView alloc] initWithFrame:ABRectMultiply([[self class] defaults].iconFrame, GKNotificationScaleFactor())];
     tLogo.contentMode = UIViewContentModeScaleAspectFill;
     tLogo.layer.cornerRadius = [[self class] defaults].iconCornerRadius*GKNotificationScaleFactor();
     tLogo.layer.masksToBounds = YES;
@@ -265,8 +286,8 @@ static GKAchievementNotificationPlusDefaults defaults;
             [self addSubview:self.logo];
         }
         self.logo.image = image;
-        self.textLabel.frame = CGRectMultiply([[self class] defaults].text1WithImageFrame, GKNotificationScaleFactor());
-        self.detailLabel.frame = CGRectMultiply([[self class] defaults].text2WithImageFrame, GKNotificationScaleFactor());
+        self.textLabel.frame = ABRectMultiply([[self class] defaults].text1WithImageFrame, GKNotificationScaleFactor());
+        self.detailLabel.frame = ABRectMultiply([[self class] defaults].text2WithImageFrame, GKNotificationScaleFactor());
     }
     else
     {
@@ -274,8 +295,8 @@ static GKAchievementNotificationPlusDefaults defaults;
         {
             [self.logo removeFromSuperview];
         }
-        self.textLabel.frame = CGRectMultiply([[self class] defaults].text1Frame, GKNotificationScaleFactor());
-        self.detailLabel.frame = CGRectMultiply([[self class] defaults].text2Frame, GKNotificationScaleFactor());
+        self.textLabel.frame = ABRectMultiply([[self class] defaults].text1Frame, GKNotificationScaleFactor());
+        self.detailLabel.frame = ABRectMultiply([[self class] defaults].text2Frame, GKNotificationScaleFactor());
     }
 }
 

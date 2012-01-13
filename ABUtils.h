@@ -11,4 +11,4 @@
 // TODO: make inline
 
 NSUInteger ABUniversalScaleFactor(void);
-CGRect CGRectMultiply(CGRect rect, CGFloat scalar);
+CGRect ABRectMultiply(CGRect rect, CGFloat scalar);

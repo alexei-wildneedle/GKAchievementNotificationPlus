@@ -20,7 +20,7 @@ NSUInteger ABUniversalScaleFactor(void)
     }
 }
 
-CGRect CGRectMultiply(CGRect rect, CGFloat scalar)
+CGRect ABRectMultiply(CGRect rect, CGFloat scalar)
 {
     return CGRectMake(rect.origin.x*scalar, rect.origin.y*scalar, rect.size.width*scalar, rect.size.height*scalar);
 }
